@@ -2,16 +2,12 @@ use std::sync::Arc;
 use wgpu::ExperimentalFeatures;
 
 pub fn set_up_wgpu() -> (wgpu::Device, wgpu::Queue) {
-    let instance = if cfg!(windows) {
-        let desc = wgpu::InstanceDescriptor {
-            backends: wgpu::Backends::DX12,
-            ..Default::default()
-        };
-
-        wgpu::Instance::new(&desc)
-    } else {
-        wgpu::Instance::default()
+    let desc = wgpu::InstanceDescriptor {
+        backends: wgpu::Backends::VULKAN,
+        ..Default::default()
     };
+
+    let instance = wgpu::Instance::new(&desc);
 
     let adapter = pollster::block_on(async {
         instance
