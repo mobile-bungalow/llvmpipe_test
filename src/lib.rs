@@ -1,7 +1,7 @@
 // we're all hungry and itching to get back to our hotplates at home
 mod boilerplates;
 use bytemuck::{Pod, Zeroable, bytes_of};
-use image::*;
+use image::RgbaImage;
 use wgpu::*;
 
 #[repr(C, align(16))]
@@ -147,29 +147,24 @@ pub fn render_toy(redness: f32, resolution: [f32; 2]) -> RgbaImage {
 
 #[cfg(test)]
 mod test {
-    use image::{EncodableLayout, ImageBuffer, Rgba};
-    use rendiff::Threshold;
-
     use crate::render_toy;
 
     #[test]
     fn snapshot() {
-        let image = render_toy(0.5, [512., 512.]);
-        let (w, h) = (image.width() as usize, image.height() as usize);
+        let actual = render_toy(0.5, [512., 512.]);
 
         let png_bytes = include_bytes!("fixture.png");
-        let decoded_image = image::load_from_memory(png_bytes).expect("Failed to decode PNG image");
-        let rgba_image: ImageBuffer<Rgba<u8>, Vec<u8>> = decoded_image.to_rgba8();
-        let fixture = rgba_image.into_raw();
+        let expected = image::load_from_memory(png_bytes)
+            .expect("Failed to decode PNG")
+            .to_rgba8();
 
-        let actual_pixels: &[[u8; 4]] = bytemuck::cast_slice(image.as_bytes());
-        let expected_pixels: &[[u8; 4]] = bytemuck::cast_slice(&fixture);
+        assert_eq!(actual.dimensions(), expected.dimensions());
 
-        let actual = rendiff::imgref::Img::new(actual_pixels, w, h);
-        let expected = rendiff::imgref::Img::new(expected_pixels, w, h);
-
-        let difference = rendiff::diff(actual, expected);
-
-        assert!(Threshold::no_bigger_than(1).allows(difference.histogram()));
+        for (a, e) in actual.pixels().zip(expected.pixels()) {
+            for i in 0..4 {
+                let diff = (a.0[i] as i16 - e.0[i] as i16).abs();
+                assert!(diff <= 1, "pixel diff too large: {diff}");
+            }
+        }
     }
 }

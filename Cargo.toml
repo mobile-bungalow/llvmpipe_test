@@ -4,9 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-tweak_shader = "0.5.0"
-wgpu = "27.0.1"
+wgpu = { version = "27.0.1", default-features = false, features = ["wgsl", "vulkan", "metal"] }
 bytemuck = { version = "1.14.0", features = ["derive"] }
 pollster = "0.3.0"
-image = "0.24.7"
-rendiff = "0.2.1"
+image = { version = "0.24", default-features = false, features = ["png"] }

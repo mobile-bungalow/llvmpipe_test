@@ -2,11 +2,17 @@ use std::sync::Arc;
 use wgpu::ExperimentalFeatures;
 
 pub fn set_up_wgpu() -> (wgpu::Device, wgpu::Queue) {
-    let desc = wgpu::InstanceDescriptor {
-        backends: wgpu::Backends::VULKAN,
-        ..Default::default()
+    let desc = if cfg!(target_vendor = "apple") {
+        wgpu::InstanceDescriptor {
+            backends: wgpu::Backends::METAL,
+            ..Default::default()
+        }
+    } else {
+        wgpu::InstanceDescriptor {
+            backends: wgpu::Backends::VULKAN,
+            ..Default::default()
+        }
     };
-
     let instance = wgpu::Instance::new(&desc);
 
     let adapter = pollster::block_on(async {
