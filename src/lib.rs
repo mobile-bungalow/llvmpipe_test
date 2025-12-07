@@ -97,7 +97,7 @@ pub fn render_toy(redness: f32, resolution: [f32; 2]) -> RgbaImage {
         pass.set_pipeline(&pipeline);
         pass.set_bind_group(0, &bind_group, &[]);
         pass.set_push_constants(0, bytes_of(&pc));
-        pass.dispatch_workgroups((width + 7) / 8, (height + 7) / 8, 1);
+        pass.dispatch_workgroups(width.div_ceil(8), height.div_ceil(8), 1);
     }
 
     let buffer = device.create_buffer(&BufferDescriptor {
